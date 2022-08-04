@@ -1,36 +1,38 @@
-FROM rust:1.62 as builder
+FROM rust:1.62-slim as builder
 
 # Run cargo build once with just our Cargo.toml to cache dependencies.
 RUN USER=root cargo new --bin server
 WORKDIR ./server
+## Install target platform (Cross-Compilation) --> Needed for Alpine
+RUN rustup target add x86_64-unknown-linux-musl
 COPY ./Cargo.toml ./Cargo.lock .
-RUN cargo build --release
+RUN cargo build --release --target x86_64-unknown-linux-musl
 RUN rm src/*.rs
 
 # Now copy our source code and build it for real.
-COPY . ./
-RUN rm ./target/release/deps/server*
-RUN cargo build --release
+COPY ./src ./src
+## Touch main.rs to prevent cached release build
+RUN touch ./src/main.rs
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
 
 # The actual image containing the app
-FROM debian:buster-slim as server
+FROM alpine:3.16 AS runtime
 ARG APP=/usr/src/app
 
-RUN apt-get update \
-    && apt-get install -y ca-certificates tzdata \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk add --no-cache ca-certificates tzdata \
+    && rm -rf /var/cache/apk/*
 
 EXPOSE 8000
 
 ENV TZ=Etc/UTC \
     APP_USER=appuser
 
-RUN groupadd $APP_USER \
-    && useradd -g $APP_USER $APP_USER \
-    && mkdir -p ${APP}
+RUN addgroup -S $APP_USER \
+    && adduser -S -g $APP_USER $APP_USER
 
-COPY --from=builder /server/target/release/server ${APP}/server
+COPY --from=builder /server/target/x86_64-unknown-linux-musl/release/server ${APP}/server
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
