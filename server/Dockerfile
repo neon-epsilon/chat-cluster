@@ -3,7 +3,7 @@ FROM rust:1.62 as builder
 # Run cargo build once with just our Cargo.toml to cache dependencies.
 RUN USER=root cargo new --bin server
 WORKDIR ./server
-COPY ./Cargo.toml ./Cargo.toml
+COPY ./Cargo.toml ./Cargo.lock .
 RUN cargo build --release
 RUN rm src/*.rs
 
