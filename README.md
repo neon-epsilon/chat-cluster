@@ -1,6 +1,25 @@
+# Requirements
+
+- docker
+- k3d
+- kubectl
+
+# Set up cluster
+
+Create and configure a local cluster:
+
 ```bash
-$ k3d cluster create -p "8081:80@loadbalancer" --agents 2 testcluster
-$ kubectl apply -f cluster-config.yaml
-$ curl localhost:8081
+./k8s/setup_cluster.sh
 ```
 
+Test that it works:
+
+```bash
+curl localhost:8081/health
+```
+
+Delete it again after use:
+
+```bash
+k3d cluster delete mycluster
+```
