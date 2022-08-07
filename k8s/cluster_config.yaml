@@ -15,8 +15,8 @@ spec:
         app: test-app
     spec:
       containers:
-      - name: {{DOCKER_IMAGE}}
-        image: {{K3D_REGISTRY}}:{{DOCKER_REGISTRY_PORT}}/{{DOCKER_IMAGE}}
+      - name: server
+        image: mycluster-registry:8050/server
         ports:
         - containerPort: 8000
 ---

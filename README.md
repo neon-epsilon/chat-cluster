@@ -6,10 +6,22 @@
 
 # Set up cluster
 
-Create and configure a local cluster:
+Create a local cluster and container registry:
 
 ```bash
-./k8s/setup_cluster.sh
+./k8s/create_cluster.sh
+```
+
+Build the container and publish it:
+
+```bash
+./k8s/publish_image.sh
+```
+
+Configure the cluster:
+
+```bash
+kubectl apply -f ./k8s/cluster_config.yaml
 ```
 
 Test that it works:
