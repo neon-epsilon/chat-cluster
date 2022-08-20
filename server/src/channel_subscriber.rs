@@ -6,6 +6,7 @@ use futures::StreamExt;
 use redis::Msg;
 use warp::Stream;
 
+#[derive(Clone, Debug)]
 pub struct ChatMessage {
     pub channel: String,
     pub message_text: String,
