@@ -1,8 +1,7 @@
 use std::{convert::Infallible, sync::Arc};
 
-use futures::TryStreamExt;
 use server::{
-    channel_subscriber::{ChannelSubscriber, RedisChannelSubscriber},
+    channel_subscriber::RedisChannelSubscriber,
     chat_client::ChatClient,
 };
 use tokio;
@@ -11,16 +10,6 @@ use warp::{Filter, Reply};
 #[tokio::main]
 async fn main() {
     let channel_subscriber = RedisChannelSubscriber::new("redis://127.0.0.1:6379".to_string());
-
-    //testy-test
-    let mut stream = channel_subscriber.subscribe("test-channel").await.unwrap();
-    println!("Starting stream");
-    while let Some(msg) = stream.try_next().await.unwrap() {
-        println!("Message received:");
-        println!("{msg:#?}");
-    }
-    println!("Stream closed");
-    //end of testy-test
 
     let chat_client = ChatClient::new(Arc::new(channel_subscriber));
 
