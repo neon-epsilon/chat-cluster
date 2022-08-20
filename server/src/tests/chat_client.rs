@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use futures::{future, TryStreamExt};
-use tokio::sync::broadcast::{self, Sender};
+use tokio::sync::broadcast::{self, Sender, Receiver};
 use tokio_stream::wrappers::BroadcastStream;
 
 use crate::{
@@ -13,13 +13,17 @@ use crate::{
 #[derive(Clone)]
 pub struct MockChannelSubscriber {
     message_sender: Sender<ChatMessage>,
+    /// Keep a dummy receiver alive so that we can "publish" messages even if there are no active
+    /// subscribers.
+    _dummy_receiver: Arc<Receiver<ChatMessage>>,
 }
 
 impl MockChannelSubscriber {
     pub fn new() -> Self {
-        let (message_sender, _receiver) = broadcast::channel(16);
+        let (message_sender, receiver) = broadcast::channel(16);
+        let _dummy_receiver = Arc::new(receiver);
 
-        MockChannelSubscriber { message_sender }
+        MockChannelSubscriber { message_sender, _dummy_receiver }
     }
 
     pub fn publish_message(&self, msg: ChatMessage) -> Result<()> {
@@ -45,7 +49,6 @@ impl ChannelSubscriber for MockChannelSubscriber {
 #[tokio::test]
 async fn subscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-
     let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
 
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
@@ -69,4 +72,22 @@ async fn subscribe() {
         })
         .unwrap();
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+}
+
+#[tokio::test]
+async fn unsubscribe() {
+    let mock_channel_subscriber = MockChannelSubscriber::new();
+    let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
+
+    let channel_name = "test-channel".to_string();
+    chat_client.subscribe(&channel_name).unwrap();
+    chat_client.unsubscribe(&channel_name).unwrap();
+
+    mock_channel_subscriber
+        .publish_message(ChatMessage {
+            channel: channel_name.clone(),
+            message_text: "This message should not show up in the client because we already unsubscribed.".to_string(),
+        })
+        .unwrap();
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
 }
