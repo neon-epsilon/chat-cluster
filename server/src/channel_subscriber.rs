@@ -1,18 +1,9 @@
-use std::pin::Pin;
-
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::StreamExt;
 use redis::Msg;
-use warp::Stream;
 
-#[derive(Clone, Debug)]
-pub struct ChatMessage {
-    pub channel: String,
-    pub message_text: String,
-}
-
-pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>>>>;
+use crate::{ChatMessage, MessageStream};
 
 #[async_trait]
 pub trait ChannelSubscriber: Send + Sync {

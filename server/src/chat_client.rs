@@ -11,12 +11,12 @@ pub struct ChatClient {
 }
 
 impl ChatClient {
-    pub fn new(incoming_message_manager: Arc<dyn ChannelSubscriber>) -> Self {
+    pub fn new(channel_subscriber: Arc<dyn ChannelSubscriber>) -> Self {
         ChatClient {
             messages_received: Arc::new(Mutex::new(vec![
                 "Yoohoo, dummy message, you big dummy!".to_string()
             ])),
-            channel_subscriber: incoming_message_manager,
+            channel_subscriber,
         }
     }
 
