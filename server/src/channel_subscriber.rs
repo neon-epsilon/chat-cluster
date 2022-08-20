@@ -14,22 +14,22 @@ pub struct ChatMessage {
 pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>>>>;
 
 #[async_trait]
-pub trait IncomingMessageManager: Send + Sync {
+pub trait ChannelSubscriber: Send + Sync {
     async fn subscribe(&self, channel_name: &str) -> Result<MessageStream>;
 }
 
-pub struct RedisIncomingMessageManager {
+pub struct RedisChannelSubscriber {
     redis_url: String,
 }
 
-impl RedisIncomingMessageManager {
+impl RedisChannelSubscriber {
     pub fn new(redis_url: String) -> Self {
-        RedisIncomingMessageManager { redis_url }
+        RedisChannelSubscriber { redis_url }
     }
 }
 
 #[async_trait]
-impl IncomingMessageManager for RedisIncomingMessageManager {
+impl ChannelSubscriber for RedisChannelSubscriber {
     async fn subscribe(&self, channel_name: &str) -> Result<MessageStream> {
         let redis_client = redis::Client::open(self.redis_url.clone())?;
         let connection = redis_client.get_async_connection().await?;

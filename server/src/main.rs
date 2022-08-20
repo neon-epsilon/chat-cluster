@@ -1,13 +1,13 @@
 use std::{convert::Infallible, sync::Arc};
 
-use server::{chat_client::ChatClient, incoming_message_manager::RedisIncomingMessageManager};
+use server::{channel_subscriber::RedisChannelSubscriber, chat_client::ChatClient};
 use tokio;
 use warp::{Filter, Reply};
 
 #[tokio::main]
 async fn main() {
     let incoming_message_manager =
-        RedisIncomingMessageManager::new("redis://127.0.0.1:6379".to_string());
+        RedisChannelSubscriber::new("redis://127.0.0.1:6379".to_string());
     let chat_client = ChatClient::new(Arc::new(incoming_message_manager));
 
     let health_route = warp::path!("health").and_then(health_handler);

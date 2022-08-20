@@ -2,21 +2,21 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 
-use crate::incoming_message_manager::IncomingMessageManager;
+use crate::channel_subscriber::ChannelSubscriber;
 
 #[derive(Clone)]
 pub struct ChatClient {
-    incoming_message_manager: Arc<dyn IncomingMessageManager>,
+    channel_subscriber: Arc<dyn ChannelSubscriber>,
     messages_received: Arc<Mutex<Vec<String>>>,
 }
 
 impl ChatClient {
-    pub fn new(incoming_message_manager: Arc<dyn IncomingMessageManager>) -> Self {
+    pub fn new(incoming_message_manager: Arc<dyn ChannelSubscriber>) -> Self {
         ChatClient {
             messages_received: Arc::new(Mutex::new(vec![
                 "Yoohoo, dummy message, you big dummy!".to_string()
             ])),
-            incoming_message_manager,
+            channel_subscriber: incoming_message_manager,
         }
     }
 
