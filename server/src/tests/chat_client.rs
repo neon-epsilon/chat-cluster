@@ -49,6 +49,24 @@ async fn subscribe() {
     let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
 
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
-    //TODO: Subscribe, send some messages, assert that they were received. Then send some messages
-    //with another channel name, assert that they were not received.
+
+    let channel_name = "test-channel".to_string();
+    chat_client.subscribe(&channel_name).unwrap();
+
+    mock_channel_subscriber
+        .publish_message(ChatMessage {
+            channel: channel_name.clone(),
+            message_text: "This message should show up in the client.".to_string(),
+        })
+        .unwrap();
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+
+    let unrelated_channel_name = "some-other-channel".to_string();
+    mock_channel_subscriber
+        .publish_message(ChatMessage {
+            channel: unrelated_channel_name,
+            message_text: "This message should not show up.".to_string(),
+        })
+        .unwrap();
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
 }

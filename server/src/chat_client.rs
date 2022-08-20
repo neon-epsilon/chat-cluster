@@ -23,10 +23,12 @@ impl ChatClient {
     }
 
     pub fn subscribe(&self, channel_name: &str) -> Result<()> {
-        todo!()
+        //TODO
+        Ok(())
     }
 
     pub fn unsubscribe(&self, channel_name: &str) -> Result<()> {
-        todo!()
+        //TODO
+        Ok(())
     }
 }
