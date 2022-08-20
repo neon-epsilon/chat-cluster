@@ -1,3 +1,6 @@
+use std::pin::Pin;
+
+use async_trait::async_trait;
 use futures::StreamExt;
 use redis::{Msg, RedisError};
 use thiserror::Error;
@@ -8,20 +11,26 @@ pub struct ChatMessage {
     pub message_text: String,
 }
 
-pub struct IncomingMessageManager {
+pub type MessageStream = Pin<Box<dyn Stream<Item = IncomingMessageManagerResult<ChatMessage>>>>;
+
+#[async_trait]
+pub trait IncomingMessageManager {
+    async fn subscribe(&self, channel_name: &str) -> IncomingMessageManagerResult<MessageStream>;
+}
+
+pub struct RedisIncomingMessageManager {
     redis_url: String,
 }
 
-impl IncomingMessageManager {
+impl RedisIncomingMessageManager {
     pub fn new(redis_url: String) -> IncomingMessageManagerResult<Self> {
-        Ok(IncomingMessageManager { redis_url })
+        Ok(RedisIncomingMessageManager { redis_url })
     }
+}
 
-    pub async fn subscribe(
-        &mut self,
-        channel_name: &str,
-    ) -> IncomingMessageManagerResult<impl Stream<Item = IncomingMessageManagerResult<ChatMessage>>>
-    {
+#[async_trait]
+impl IncomingMessageManager for RedisIncomingMessageManager {
+    async fn subscribe(&self, channel_name: &str) -> IncomingMessageManagerResult<MessageStream> {
         let redis_client = redis::Client::open(self.redis_url.clone())?;
         let connection = redis_client.get_async_connection().await?;
         let mut pubsub = connection.into_pubsub();
@@ -30,7 +39,7 @@ impl IncomingMessageManager {
 
         let stream = pubsub.into_on_message().map(chat_message_from_redis_msg);
 
-        Ok(stream)
+        Ok(Box::pin(stream))
     }
 }
 
