@@ -1,6 +1,6 @@
 use std::{convert::Infallible, sync::Arc};
 
-use server::{channel_subscriber::RedisChannelSubscriber, chat_client::ChatClient};
+use chat_client::{channel_subscriber::RedisChannelSubscriber, chat_client::ChatClient};
 use tokio;
 use warp::{Filter, Reply};
 

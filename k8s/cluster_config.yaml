@@ -15,8 +15,8 @@ spec:
         app: test-app
     spec:
       containers:
-      - name: server
-        image: mycluster-registry:8050/server
+      - name: chat-client
+        image: mycluster-registry:8050/chat-client
         ports:
         - containerPort: 8000
 ---

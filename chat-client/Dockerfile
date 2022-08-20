@@ -1,8 +1,8 @@
 FROM rust:1.62-slim as builder
 
 # Run cargo build once with just our Cargo.toml to cache dependencies.
-RUN USER=root cargo new --bin server
-WORKDIR ./server
+RUN USER=root cargo new --bin chat-client
+WORKDIR ./chat-client
 ## Install target platform (Cross-Compilation) --> Needed for Alpine
 RUN rustup target add x86_64-unknown-linux-musl
 COPY ./Cargo.toml ./Cargo.lock .
@@ -32,11 +32,11 @@ ENV TZ=Etc/UTC \
 RUN addgroup -S $APP_USER \
     && adduser -S -g $APP_USER $APP_USER
 
-COPY --from=builder /server/target/x86_64-unknown-linux-musl/release/server ${APP}/server
+COPY --from=builder /chat-client/target/x86_64-unknown-linux-musl/release/chat-client ${APP}/chat-client
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
 USER $APP_USER
 WORKDIR ${APP}
 
-CMD ["./server"]
+CMD ["./chat-client"]
