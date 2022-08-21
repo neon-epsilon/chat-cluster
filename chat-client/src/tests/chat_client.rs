@@ -1,9 +1,9 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use anyhow::{Error, Result};
 use async_trait::async_trait;
 use futures::{future, TryStreamExt};
-use tokio::sync::broadcast::{self, Sender, Receiver};
+use tokio::sync::broadcast::{self, Receiver, Sender};
 use tokio_stream::wrappers::BroadcastStream;
 
 use crate::{
@@ -23,7 +23,10 @@ impl MockChannelSubscriber {
         let (message_sender, receiver) = broadcast::channel(16);
         let _dummy_receiver = Arc::new(receiver);
 
-        MockChannelSubscriber { message_sender, _dummy_receiver }
+        MockChannelSubscriber {
+            message_sender,
+            _dummy_receiver,
+        }
     }
 
     pub fn publish_message(&self, msg: ChatMessage) -> Result<()> {
@@ -54,7 +57,7 @@ async fn subscribe() {
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
 
     let channel_name = "test-channel".to_string();
-    chat_client.subscribe(&channel_name).unwrap();
+    chat_client.subscribe(&channel_name).await.unwrap();
 
     mock_channel_subscriber
         .publish_message(ChatMessage {
@@ -62,7 +65,16 @@ async fn subscribe() {
             message_text: "This message should show up in the client.".to_string(),
         })
         .unwrap();
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+    // Since the message is handled asynchronously, we have to wait a little.
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @r###"
+    [
+        ChatMessage {
+            channel: "test-channel",
+            message_text: "This message should show up in the client.",
+        },
+    ]
+    "###);
 
     let unrelated_channel_name = "some-other-channel".to_string();
     mock_channel_subscriber
@@ -80,13 +92,15 @@ async fn unsubscribe() {
     let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
 
     let channel_name = "test-channel".to_string();
-    chat_client.subscribe(&channel_name).unwrap();
+    chat_client.subscribe(&channel_name).await.unwrap();
     chat_client.unsubscribe(&channel_name).unwrap();
 
     mock_channel_subscriber
         .publish_message(ChatMessage {
             channel: channel_name.clone(),
-            message_text: "This message should not show up in the client because we already unsubscribed.".to_string(),
+            message_text:
+                "This message should not show up in the client because we already unsubscribed."
+                    .to_string(),
         })
         .unwrap();
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");

@@ -15,4 +15,4 @@ pub struct ChatMessage {
     pub message_text: String,
 }
 
-pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>>>>;
+pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>> + Send>>;
