@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 async-trait = "0.1"
+dashmap = "5.3"
 futures = "0.3"
 redis = {version = "0.21", features = ["aio", "tokio-comp"]}
 stream-cancel = "0.8"

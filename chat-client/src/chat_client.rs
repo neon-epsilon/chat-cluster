@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
+use dashmap::{mapref::entry::Entry, DashMap};
 use futures::TryStreamExt;
 use stream_cancel::{Trigger, Tripwire};
 use tokio::task::JoinHandle;
@@ -11,7 +12,7 @@ use crate::{channel_subscriber::ChannelSubscriber, ChatMessage, MessageStream};
 pub struct ChatClient {
     channel_subscriber: Arc<dyn ChannelSubscriber>,
     messages_received: Arc<Mutex<Vec<ChatMessage>>>,
-    active_subscriptions: Arc<Mutex<Vec<ChannelSubscription>>>,
+    active_subscriptions: Arc<DashMap<String, ChannelSubscription>>,
 }
 
 impl ChatClient {
@@ -27,15 +28,23 @@ impl ChatClient {
         self.messages_received.lock().unwrap().clone()
     }
 
-    pub async fn subscribe(&self, channel_name: &str) -> Result<()> {
-        let incoming_message_stream = self.channel_subscriber.subscribe(channel_name).await?;
-        let message_list = Arc::clone(&self.messages_received);
+    /// Returns whether the subscription was newly created, similar to
+    /// [`HashSet::insert`](std::collections::HashSet::insert).
+    pub async fn subscribe(&self, channel_name: &str) -> Result<bool> {
+        match self.active_subscriptions.entry(channel_name.to_string()) {
+            Entry::Occupied(_) => Ok(false),
+            Entry::Vacant(empty_entry) => {
+                let incoming_message_stream =
+                    self.channel_subscriber.subscribe(channel_name).await?;
+                let message_list = Arc::clone(&self.messages_received);
 
-        let subscription = ChannelSubscription::new(incoming_message_stream, message_list);
+                let subscription = ChannelSubscription::new(incoming_message_stream, message_list);
 
-        self.active_subscriptions.lock().unwrap().push(subscription);
+                empty_entry.insert(subscription);
 
-        Ok(())
+                Ok(true)
+            }
+        }
     }
 
     pub fn unsubscribe(&self, channel_name: &str) -> Result<()> {
