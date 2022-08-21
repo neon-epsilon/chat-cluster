@@ -83,7 +83,15 @@ async fn subscribe() {
             message_text: "This message should not show up.".to_string(),
         })
         .unwrap();
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @r###"
+    [
+        ChatMessage {
+            channel: "test-channel",
+            message_text: "This message should show up in the client.",
+        },
+    ]
+    "###);
 }
 
 #[tokio::test]
@@ -93,7 +101,9 @@ async fn unsubscribe() {
 
     let channel_name = "test-channel".to_string();
     chat_client.subscribe(&channel_name).await.unwrap();
-    chat_client.unsubscribe(&channel_name).unwrap();
+    chat_client.unsubscribe(&channel_name);
+    // Wait a little otherwise we might still be subscribed.
+    tokio::time::sleep(Duration::from_millis(100)).await;
 
     mock_channel_subscriber
         .publish_message(ChatMessage {
@@ -103,5 +113,7 @@ async fn unsubscribe() {
                     .to_string(),
         })
         .unwrap();
+    // Make sure the message had enough time to be handled.
+    tokio::time::sleep(Duration::from_millis(100)).await;
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
 }

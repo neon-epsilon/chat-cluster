@@ -47,15 +47,16 @@ impl ChatClient {
         }
     }
 
-    pub fn unsubscribe(&self, channel_name: &str) -> Result<()> {
-        //TODO
-        Ok(())
+    /// Returns whether we have been subscribed in the first place.
+    pub fn unsubscribe(&self, channel_name: &str) -> bool {
+        // The subscription should stop providing messages once it is dropped.
+        self.active_subscriptions.remove(channel_name).is_some()
     }
 }
 
 struct ChannelSubscription {
     _message_reception_worker_handle: JoinHandle<Result<()>>,
-    stream_cancellation_trigger: Trigger,
+    _stream_cancellation_trigger: Trigger,
 }
 
 impl ChannelSubscription {
@@ -78,7 +79,7 @@ impl ChannelSubscription {
 
         Self {
             _message_reception_worker_handle: join_handle,
-            stream_cancellation_trigger,
+            _stream_cancellation_trigger: stream_cancellation_trigger,
         }
     }
 }
