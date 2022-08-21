@@ -92,6 +92,7 @@ dependencies = [
  "futures",
  "insta",
  "redis",
+ "stream-cancel",
  "thiserror",
  "tokio",
  "tokio-stream",
@@ -829,6 +830,17 @@ checksum = "66d72b759436ae32898a2af0a14218dbf55efde3feeb170eb623637db85ee1e0"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "stream-cancel"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b0a9eb2715209fb8cc0d942fcdff45674bfc9f0090a0d897e85a22955ad159b"
+dependencies = [
+ "futures-core",
+ "pin-project",
+ "tokio",
 ]
 
 [[package]]
