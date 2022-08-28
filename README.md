@@ -3,6 +3,7 @@
 - docker
 - k3d
 - kubectl
+- helm
 
 # Set up cluster
 
@@ -12,16 +13,16 @@ Create a local cluster and container registry:
 ./k8s/create_cluster.sh
 ```
 
-Build the container and publish it:
+Build the chat-client container and publish it to the registry:
 
 ```bash
 ./k8s/publish_image.sh
 ```
 
-Configure the cluster:
+Install the helm chart:
 
 ```bash
-kubectl apply -f ./k8s/cluster_config.yaml
+helm install ./k8s/helm/chat-cluster chat-cluster
 ```
 
 Test that it works:
@@ -33,5 +34,5 @@ curl localhost:8081/health
 Delete it again after use:
 
 ```bash
-k3d cluster delete mycluster
+helm uninstall chat-cluster
 ```

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: chat-client
-        image: mycluster-registry:8050/chat-client
+        image: mycluster-registry:8050/{{ .Values.ChatClientDockerTag }}
         ports:
         - containerPort: 8000
 ---
