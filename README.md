@@ -31,8 +31,8 @@ Test that it works:
 curl localhost:8081/chat-client/health
 ```
 
-Delete it again after use:
+Delete the cluster again after use:
 
 ```bash
-helm uninstall chat-cluster
+k3d cluster delete mycluster
 ```
