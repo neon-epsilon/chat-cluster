@@ -6,9 +6,10 @@ use warp::{Filter, Reply};
 
 #[tokio::main]
 async fn main() {
-    let channel_subscriber = RedisChannelSubscriber::new("redis://127.0.0.1:6379".to_string());
+    let channel_subscriber = RedisChannelSubscriber::new("redis://message-broker-service:6379".to_string());
 
     let chat_client = ChatClient::new(Arc::new(channel_subscriber));
+    chat_client.subscribe("default-channel").await.unwrap();
 
     let health_route = warp::path!("health").and_then(health_handler);
     let messages_route = warp::path!("messages")
