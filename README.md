@@ -16,7 +16,7 @@ Create a local cluster and container registry:
 Build the chat-client container and publish it to the registry:
 
 ```bash
-./k8s/publish_image.sh
+./k8s/publish_chat_client_image.sh
 ```
 
 Install the helm chart:
