@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-deployment
+  name: chat-client-deployment
   labels:
-    app: test-app
+    app: chat-client
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: test-app
+      app: chat-client
   template:
     metadata:
       labels:
-        app: test-app
+        app: chat-client
     spec:
       containers:
       - name: chat-client
@@ -24,8 +24,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: test-app
-  name: test-service
+    app: chat-client
+  name: chat-client-service
 spec:
   ports:
   - name: 80-8000
@@ -33,20 +33,20 @@ spec:
     protocol: TCP
     targetPort: 8000
   selector:
-    app: test-app
+    app: chat-client
   type: ClusterIP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-ingress
+  name: chat-client-ingress
 spec:
   rules:
   - http:
       paths:
       - backend:
           service:
-            name: test-service
+            name: chat-client-service
             port:
               number: 80
         path: /
