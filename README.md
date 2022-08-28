@@ -28,7 +28,7 @@ helm install ./k8s/helm/chat-cluster chat-cluster
 Test that it works:
 
 ```bash
-curl localhost:8081/health
+curl localhost:8081/chat-client/health
 ```
 
 Delete it again after use:

@@ -6,6 +6,7 @@ use warp::{Filter, Reply};
 
 #[tokio::main]
 async fn main() {
+    //TODO: make the redis url configurable via env vars or config file.
     let channel_subscriber = RedisChannelSubscriber::new("redis://message-broker-service:6379".to_string());
 
     let chat_client = ChatClient::new(Arc::new(channel_subscriber));
