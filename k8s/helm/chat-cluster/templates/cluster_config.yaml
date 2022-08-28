@@ -80,6 +80,7 @@ kind: Ingress
 metadata:
   name: chat-client-ingress
   annotations:
+    kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/router.middlewares: default-strip-prefix@kubernetescrd
 spec:
   rules:
