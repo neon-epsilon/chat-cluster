@@ -6,7 +6,8 @@ set -x
 SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )")
 
 CURRENT_COMMIT_SHA=$(cd $SCRIPT_DIR && git rev-parse --short HEAD)
-DOCKER_TAG=chat-client-$CURRENT_COMMIT_SHA
+TIMESTAMP=$(date +"%s")
+DOCKER_TAG=chat-client-$CURRENT_COMMIT_SHA-$TIMESTAMP
 DOCKER_REPOSITORY=localhost:8050
 
 CHAT_CLIENT_DIR=$SCRIPT_DIR/../chat-client
