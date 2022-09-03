@@ -38,7 +38,7 @@ kubectl exec -it service/message-broker-service -- redis-cli
 To check that it was received, use the `messages` endpoint:
 
 ```bash
-curl localhot:8081/chat-client/messagess
+curl localhost:8081/chat-client/messages
 ```
 
 # Delete the cluster after use
