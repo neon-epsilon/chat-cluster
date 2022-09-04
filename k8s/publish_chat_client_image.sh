@@ -10,9 +10,9 @@ TIMESTAMP=$(date +"%s")
 DOCKER_TAG=chat-client-$CURRENT_COMMIT_SHA-$TIMESTAMP
 DOCKER_REPOSITORY=localhost:8050
 
-CHAT_CLIENT_DIR=$SCRIPT_DIR/../chat-client
+RUST_WORKSPACE_DIR=$SCRIPT_DIR/../rust-workspace
 
-docker build -t $DOCKER_REPOSITORY/$DOCKER_TAG -f $CHAT_CLIENT_DIR/Dockerfile $CHAT_CLIENT_DIR
+docker build -t $DOCKER_REPOSITORY/$DOCKER_TAG -f $RUST_WORKSPACE_DIR/chat-client.Dockerfile $RUST_WORKSPACE_DIR
 docker push $DOCKER_REPOSITORY/$DOCKER_TAG
 
 tee $SCRIPT_DIR/helm/chat-cluster/values.yaml << EOF
