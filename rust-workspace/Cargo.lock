@@ -115,6 +115,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures",
+ "insta",
+ "redis",
+ "stream-cancel",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "console"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -751,6 +766,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "common",
  "dashmap",
  "futures",
  "insta",

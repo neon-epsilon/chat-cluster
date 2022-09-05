@@ -1,9 +1,10 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
+use common::{ChatMessage, MessageStream};
 use futures::StreamExt;
 use redis::Msg;
-use replication_log::{message_log::MessageLog, ChatMessage, MessageStream};
+use replication_log::message_log::MessageLog;
 use tokio;
 use warp::{Filter, Reply};
 
