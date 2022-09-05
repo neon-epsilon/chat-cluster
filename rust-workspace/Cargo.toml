@@ -1,2 +1,2 @@
 [workspace]
-members = ["chat-client"]
+members = ["chat-client", "replication-log"]

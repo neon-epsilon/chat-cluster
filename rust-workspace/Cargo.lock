@@ -746,6 +746,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "replication-log"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "dashmap",
+ "futures",
+ "insta",
+ "redis",
+ "stream-cancel",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+ "warp",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
