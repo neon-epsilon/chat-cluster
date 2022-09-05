@@ -8,28 +8,29 @@ WORKDIR rust-workspace
 ## initialize the crates.
 RUN \
   rustup target add x86_64-unknown-linux-musl && \
-  cargo new --lib common && \
-  cargo new --bin replication-log && \
-  cargo new --bin chat-client
+  cargo new --lib crates/common && \
+  cargo new --bin binaries/replication-log && \
+  cargo new --bin binaries/chat-client
 COPY ./Cargo.toml ./Cargo.lock .
-COPY ./common/Cargo.toml ./common/
-COPY ./replication-log/Cargo.toml ./replication-log/
-COPY ./chat-client/Cargo.toml ./chat-client/
+COPY ./crates/common/Cargo.toml ./crates/common/
+COPY ./binaries/replication-log/Cargo.toml ./binaries/replication-log/
+COPY ./binaries/chat-client/Cargo.toml ./binaries/chat-client/
 ## Build dependencies.
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
 # Now copy our source code and build it for real.
-RUN rm ./common/src/*.rs ./chat-client/src/*.rs ./replication-log/src/*.rs
-COPY ./common/src/ ./common/src/
-COPY ./chat-client/src/ ./chat-client/src/
-COPY ./replication-log/src/ ./replication-log/src/
+RUN rm ./crates/common/src/*.rs ./binaries/chat-client/src/*.rs ./binaries/replication-log/src/*.rs
+COPY ./crates/common/src/ ./crates/common/src/
+COPY ./binaries/chat-client/src/ ./binaries/chat-client/src/
+COPY ./binaries/replication-log/src/ ./binaries/replication-log/src/
 
 ## Touch main.rs to prevent cached release build
 RUN \
-  touch ./common/src/lib.rs && \
-  touch ./replication-log/src/main.rs && \
-  touch ./chat-client/src/main.rs && \
-  cargo build -p chat-client --release --target x86_64-unknown-linux-musl
+  touch ./crates/common/src/lib.rs && \
+  touch ./binaries/replication-log/src/main.rs && \
+  touch ./binaries/chat-client/src/main.rs
+
+RUN cargo build -p chat-client --release --target x86_64-unknown-linux-musl
 
 
 # The actual image containing the app

@@ -1,2 +1,2 @@
 [workspace]
-members = ["chat-client", "replication-log", "common"]
+members = ["binaries/*", "crates/*"]
