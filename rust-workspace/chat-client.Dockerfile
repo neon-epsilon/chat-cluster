@@ -1,35 +1,38 @@
+# Create an image that has only our Cargo.toml files without our actual source
+# code; we will use this to cache a builder image that already has the
+# dependencies from our Cargo.tomls compiled.
+FROM rust:1.62-slim as dependencies
+
+RUN cargo new template_binary_crate
+WORKDIR rust-workspace
+COPY ./Cargo.toml ./Cargo.lock .
+COPY ./crates/ ./crates/
+COPY ./binaries/ ./binaries/
+RUN \
+  find . -type f -not \( -name "Cargo.toml" -or -name "Cargo.lock" \) -delete && \
+  find ./crates/ -maxdepth 1 -mindepth 1 -type d -exec touch {}/src/lib.rs \; && \
+  find ./binaries/ -maxdepth 1 -mindepth 1 -type d -exec cp ../template_binary_crate/src/main.rs {}/src/main.rs \;
+
+
 FROM rust:1.62-slim as builder
 
-# Run cargo build once with our Cargo.tomls but without our source code to
-# cache dependencies.
 WORKDIR rust-workspace
-## Install target platform (Cross-Compilation) (needed for Alpine) and
-## initialize the crates.
-RUN \
-  rustup target add x86_64-unknown-linux-musl && \
-  cargo new --lib crates/common && \
-  cargo new --bin binaries/replication-log && \
-  cargo new --bin binaries/chat-client
-COPY ./Cargo.toml ./Cargo.lock .
-COPY ./crates/common/Cargo.toml ./crates/common/
-COPY ./binaries/replication-log/Cargo.toml ./binaries/replication-log/
-COPY ./binaries/chat-client/Cargo.toml ./binaries/chat-client/
-## Build dependencies.
+COPY --from=dependencies /rust-workspace/ .
+# Install target platform (Cross-Compilation) (needed for Alpine).
+RUN rustup target add x86_64-unknown-linux-musl
+# Run cargo build once with our Cargo.tomls but without our source code to
+# obtain a cached Docker layer with just our dependencies.
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
-# Now copy our source code and build it for real.
-RUN rm ./crates/common/src/*.rs ./binaries/chat-client/src/*.rs ./binaries/replication-log/src/*.rs
-COPY ./crates/common/src/ ./crates/common/src/
-COPY ./binaries/chat-client/src/ ./binaries/chat-client/src/
-COPY ./binaries/replication-log/src/ ./binaries/replication-log/src/
-
-## Touch main.rs to prevent cached release build
+# Now copy our source code to build it for real.
+COPY ./crates/ ./crates/
+COPY ./binaries/ ./binaries/
+# Touch main.rs/lib.rs to prevent cached release builds.
 RUN \
-  touch ./crates/common/src/lib.rs && \
-  touch ./binaries/replication-log/src/main.rs && \
-  touch ./binaries/chat-client/src/main.rs
+  find ./crates/ -maxdepth 1 -mindepth 1 -type d -exec touch {}/src/lib.rs \; && \
+  find ./binaries/ -maxdepth 1 -mindepth 1 -type d -exec touch {}/src/main.rs \;
 
-RUN cargo build -p chat-client --release --target x86_64-unknown-linux-musl
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
 
 # The actual image containing the app
