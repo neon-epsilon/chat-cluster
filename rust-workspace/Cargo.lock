@@ -94,8 +94,6 @@ dependencies = [
  "futures",
  "insta",
  "redis",
- "stream-cancel",
- "thiserror",
  "tokio",
  "tokio-stream",
  "warp",
@@ -120,14 +118,10 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "futures",
- "insta",
  "redis",
  "stream-cancel",
- "thiserror",
  "tokio",
- "tokio-stream",
 ]
 
 [[package]]
@@ -766,16 +760,10 @@ name = "replication-log"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
  "common",
- "dashmap",
  "futures",
- "insta",
  "redis",
- "stream-cancel",
- "thiserror",
  "tokio",
- "tokio-stream",
  "warp",
 ]
 
