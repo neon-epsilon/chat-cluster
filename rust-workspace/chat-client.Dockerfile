@@ -2,7 +2,6 @@ FROM rust:1.62-slim as builder
 
 # Run cargo build once with our Cargo.tomls but without our source code to
 # cache dependencies.
-RUN mkdir rust-workspace
 WORKDIR rust-workspace
 ## Install target platform (Cross-Compilation) (needed for Alpine) and
 ## initialize the crates.
