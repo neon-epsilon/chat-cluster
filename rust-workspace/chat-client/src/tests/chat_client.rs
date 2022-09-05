@@ -6,9 +6,9 @@ use futures::{future, TryStreamExt};
 use tokio::sync::broadcast::{self, Receiver, Sender};
 use tokio_stream::wrappers::BroadcastStream;
 
-use crate::{
-    channel_subscriber::ChannelSubscriber, chat_client::ChatClient, ChatMessage, MessageStream,
-};
+use common::{ChatMessage, MessageStream};
+
+use crate::{channel_subscriber::ChannelSubscriber, chat_client::ChatClient};
 
 #[derive(Clone)]
 pub struct MockChannelSubscriber {

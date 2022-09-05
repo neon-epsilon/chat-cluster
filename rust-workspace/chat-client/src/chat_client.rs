@@ -2,11 +2,10 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 use dashmap::{mapref::entry::Entry, DashMap};
-use futures::TryStreamExt;
-use stream_cancel::{Trigger, Tripwire};
-use tokio::task::JoinHandle;
 
-use crate::{channel_subscriber::ChannelSubscriber, ChatMessage, MessageStream};
+use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, MessageStream};
+
+use crate::channel_subscriber::ChannelSubscriber;
 
 #[derive(Clone)]
 pub struct ChatClient {
@@ -55,8 +54,7 @@ impl ChatClient {
 }
 
 struct ChannelSubscription {
-    _message_reception_worker_handle: JoinHandle<Result<()>>,
-    _stream_cancellation_trigger: Trigger,
+    _stream_to_vec_forwarder: StreamToVecForwarder,
 }
 
 impl ChannelSubscription {
@@ -68,31 +66,11 @@ impl ChannelSubscription {
         incoming_message_stream: MessageStream,
         message_list: Arc<Mutex<Vec<ChatMessage>>>,
     ) -> Self {
-        use stream_cancel::StreamExt;
-        let (stream_cancellation_trigger, tripwire) = Tripwire::new();
-        let cancellable_stream = incoming_message_stream.take_until_if(tripwire);
-
-        let join_handle = tokio::spawn(forward_messages_to_list(
-            Box::pin(cancellable_stream),
-            message_list,
-        ));
+        let _stream_to_vec_forwarder =
+            StreamToVecForwarder::new(incoming_message_stream, message_list);
 
         Self {
-            _message_reception_worker_handle: join_handle,
-            _stream_cancellation_trigger: stream_cancellation_trigger,
+            _stream_to_vec_forwarder,
         }
     }
-}
-
-async fn forward_messages_to_list(
-    mut incoming_message_stream: MessageStream,
-    message_list: Arc<Mutex<Vec<ChatMessage>>>,
-) -> Result<()> {
-    while let Some(msg) = incoming_message_stream.try_next().await? {
-        let mut message_list_inner = message_list.lock().unwrap();
-
-        message_list_inner.push(msg);
-    }
-
-    Ok(())
 }

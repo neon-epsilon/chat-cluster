@@ -1,9 +1,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use futures::StreamExt;
-use redis::Msg;
 
-use crate::{ChatMessage, MessageStream};
+use common::MessageStream;
 
 #[async_trait]
 pub trait ChannelSubscriber: Send + Sync {
@@ -29,15 +28,10 @@ impl ChannelSubscriber for RedisChannelSubscriber {
 
         pubsub.subscribe(channel_name).await?;
 
-        let stream = pubsub.into_on_message().map(chat_message_from_redis_msg);
+        let stream = pubsub
+            .into_on_message()
+            .map(common::chat_message_from_redis_msg);
 
         Ok(Box::pin(stream))
     }
-}
-
-fn chat_message_from_redis_msg(msg: Msg) -> Result<ChatMessage> {
-    Ok(ChatMessage {
-        channel: msg.get_channel()?,
-        message_text: msg.get_payload()?,
-    })
 }

@@ -1,9 +1,8 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
-use common::{ChatMessage, MessageStream};
+use common::MessageStream;
 use futures::StreamExt;
-use redis::Msg;
 use replication_log::message_log::MessageLog;
 use tokio;
 use warp::{Filter, Reply};
@@ -46,15 +45,9 @@ async fn subscribe_all_channels(redis_url: &str) -> Result<MessageStream> {
 
     pubsub.psubscribe("*").await?;
 
-    let stream = pubsub.into_on_message().map(chat_message_from_redis_msg);
+    let stream = pubsub
+        .into_on_message()
+        .map(common::chat_message_from_redis_msg);
 
     Ok(Box::pin(stream))
-}
-
-//TODO: refactor into common crate
-fn chat_message_from_redis_msg(msg: Msg) -> Result<ChatMessage> {
-    Ok(ChatMessage {
-        channel: msg.get_channel()?,
-        message_text: msg.get_payload()?,
-    })
 }
