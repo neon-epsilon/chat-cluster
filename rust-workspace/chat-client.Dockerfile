@@ -3,11 +3,13 @@
 # dependencies from our Cargo.tomls compiled.
 FROM rust:1.62-slim as dependencies
 
+# We need a sample main.rs file.
 RUN cargo new template_binary_crate
 WORKDIR rust-workspace
 COPY ./Cargo.toml ./Cargo.lock .
 COPY ./crates/ ./crates/
 COPY ./binaries/ ./binaries/
+# Only keep Cargo.toml/Cargo.lock files and empty lib.rs/sample main.rs files.
 RUN \
   find . -type f -not \( -name "Cargo.toml" -or -name "Cargo.lock" \) -delete && \
   find ./crates/ -maxdepth 1 -mindepth 1 -type d -exec touch {}/src/lib.rs \; && \
@@ -36,7 +38,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl
 
 
 # The actual image containing the app
-FROM alpine:3.16 AS runtime
+FROM alpine:3.16 AS chat-client
 ARG APP=/usr/src/app
 
 RUN \
