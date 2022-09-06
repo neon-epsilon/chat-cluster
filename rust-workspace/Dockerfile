@@ -37,9 +37,8 @@ RUN \
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
 
-# The actual image containing the app
-FROM alpine:3.16 AS chat-client
-ARG APP=/usr/src/app
+# An image ready to host a web server
+FROM alpine:3.16 AS web-server-base
 
 RUN \
   apk update && \
@@ -54,11 +53,23 @@ ENV TZ=Etc/UTC \
 RUN addgroup -S $APP_USER \
     && adduser -S -g $APP_USER $APP_USER
 
-COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/chat-client ${APP}/chat-client
 
-RUN chown -R $APP_USER:$APP_USER ${APP}
+# The actual images
+FROM web-server-base AS chat-client
+WORKDIR /usr/src/chat-client
+
+COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/chat-client .
+RUN chown -R $APP_USER:$APP_USER .
 
 USER $APP_USER
-WORKDIR ${APP}
+CMD ["./chat-client"]
 
+
+FROM web-server-base AS replication-log
+WORKDIR /usr/src/replication-log
+
+COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/replication-log .
+RUN chown -R $APP_USER:$APP_USER .
+
+USER $APP_USER
 CMD ["./chat-client"]

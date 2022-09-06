@@ -12,7 +12,7 @@ DOCKER_REPOSITORY=localhost:8050
 
 RUST_WORKSPACE_DIR=$SCRIPT_DIR/../rust-workspace
 
-docker build -t $DOCKER_REPOSITORY/$DOCKER_TAG -f $RUST_WORKSPACE_DIR/chat-client.Dockerfile $RUST_WORKSPACE_DIR
+docker build --target chat-client -t $DOCKER_REPOSITORY/$DOCKER_TAG -f $RUST_WORKSPACE_DIR/Dockerfile $RUST_WORKSPACE_DIR
 docker push $DOCKER_REPOSITORY/$DOCKER_TAG
 
 tee $SCRIPT_DIR/helm/chat-cluster/values.yaml << EOF
