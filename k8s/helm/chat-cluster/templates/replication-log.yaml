@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: replication-log-deployment
+  labels:
+    app: replication-log
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: replication-log
+  template:
+    metadata:
+      labels:
+        app: replication-log
+    spec:
+      containers:
+      - name: replication-log
+        image: mycluster-registry:8050/{{ .Values.ReplicationLogDockerTag }}
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: replication-log
+  name: replication-log-service
+spec:
+  ports:
+  - name: 80-8000
+    port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: replication-log
+  type: ClusterIP
