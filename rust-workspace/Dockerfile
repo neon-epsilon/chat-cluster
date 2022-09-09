@@ -72,4 +72,4 @@ COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/rep
 RUN chown -R $APP_USER:$APP_USER .
 
 USER $APP_USER
-CMD ["./chat-client"]
+CMD ["./replication-log"]
