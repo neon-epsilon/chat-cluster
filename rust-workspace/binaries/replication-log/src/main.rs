@@ -10,7 +10,7 @@ use warp::{Filter, Reply};
 #[tokio::main]
 async fn main() {
     //TODO: make the redis url configurable via env vars or config file.
-    let all_channels_stream = subscribe_all_channels("redis://localhost:6379")
+    let all_channels_stream = subscribe_all_channels("redis://message-broker-service:6379")
         .await
         .unwrap();
 
