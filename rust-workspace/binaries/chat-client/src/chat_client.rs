@@ -33,6 +33,7 @@ impl ChatClient {
         match self.active_subscriptions.entry(channel_name.to_string()) {
             Entry::Occupied(_) => Ok(false),
             Entry::Vacant(empty_entry) => {
+                //TODO: Retrieve already sent messages from message log after subscription
                 let incoming_message_stream =
                     self.channel_subscriber.subscribe(channel_name).await?;
                 let message_list = Arc::clone(&self.messages_received);
