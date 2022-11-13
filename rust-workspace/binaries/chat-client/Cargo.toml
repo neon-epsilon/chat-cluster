@@ -8,14 +8,14 @@ edition = "2021"
 [dependencies]
 common = { path = "../../crates//common" }
 
-anyhow = "1.0"
+anyhow = { workspace = true }
 async-trait = "0.1"
 dashmap = "5.3"
-futures = "0.3"
-redis = { version = "0.21", features = ["aio", "tokio-comp"] }
-tokio = { version = "1.20", features = ["macros", "rt-multi-thread"] }
-warp = "0.3"
+futures = { workspace = true }
+redis = { workspace = true }
+tokio = { workspace = true }
+warp = { workspace = true }
 
 [dev-dependencies]
-insta = "1.18"
+insta = { workspace = true }
 tokio-stream = { version = "0.1", features = ["sync"] }

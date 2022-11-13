@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0"
-futures = "0.3"
-redis = { version = "0.21", features = ["aio", "tokio-comp"] }
+anyhow = { workspace = true }
+futures = { workspace = true }
+redis = { workspace = true }
 stream-cancel = "0.8"
-tokio = { version = "1.20", features = ["macros", "rt-multi-thread"] }
+tokio = { workspace = true }
