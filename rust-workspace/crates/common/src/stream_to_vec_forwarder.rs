@@ -5,7 +5,7 @@ use futures::TryStreamExt;
 use stream_cancel::{Trigger, Tripwire};
 use tokio::task::JoinHandle;
 
-use crate::{ChatMessage, MessageStream};
+use crate::{ChatMessage, ChatMessageStream};
 
 pub struct StreamToVecForwarder {
     /// The handle of the forwarding task. Could be used to check for errors in the stream.
@@ -20,7 +20,7 @@ impl StreamToVecForwarder {
     ///
     /// Will automatically stop writing to the message list when dropped.
     pub fn new(
-        incoming_message_stream: MessageStream,
+        incoming_message_stream: ChatMessageStream,
         message_list: Arc<Mutex<Vec<ChatMessage>>>,
     ) -> Self {
         use stream_cancel::StreamExt;
@@ -40,7 +40,7 @@ impl StreamToVecForwarder {
 }
 
 async fn forward_messages_to_vec(
-    mut incoming_message_stream: MessageStream,
+    mut incoming_message_stream: ChatMessageStream,
     message_list: Arc<Mutex<Vec<ChatMessage>>>,
 ) -> Result<()> {
     while let Some(msg) = incoming_message_stream.try_next().await? {

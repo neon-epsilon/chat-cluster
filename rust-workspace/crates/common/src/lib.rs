@@ -21,8 +21,7 @@ impl ChatMessage {
     }
 }
 
-//TODO: rename to ChatMessageStream
-pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>> + Send>>;
+pub type ChatMessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>> + Send>>;
 
 pub fn chat_message_from_redis_msg(msg: Msg) -> Result<ChatMessage> {
     Ok(ChatMessage {

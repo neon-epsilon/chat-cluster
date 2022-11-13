@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
-use common::MessageStream;
+use common::ChatMessageStream;
 use futures::StreamExt;
 use replication_log::message_log::MessageLog;
 use tokio;
@@ -38,7 +38,7 @@ async fn messages_handler(message_log: MessageLog) -> Result<impl Reply, Infalli
     Ok(serialized_messages)
 }
 
-async fn subscribe_all_channels(redis_url: &str) -> Result<MessageStream> {
+async fn subscribe_all_channels(redis_url: &str) -> Result<ChatMessageStream> {
     let redis_client = redis::Client::open(redis_url)?;
     let connection = redis_client.get_async_connection().await?;
     let mut pubsub = connection.into_pubsub();

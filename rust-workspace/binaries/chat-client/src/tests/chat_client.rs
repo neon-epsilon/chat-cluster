@@ -6,7 +6,7 @@ use futures::{future, TryStreamExt};
 use tokio::sync::broadcast::{self, Receiver, Sender};
 use tokio_stream::wrappers::BroadcastStream;
 
-use common::{ChatMessage, MessageStream};
+use common::{ChatMessage, ChatMessageStream};
 
 use crate::{channel_subscriber::ChannelSubscriber, chat_client::ChatClient};
 
@@ -38,7 +38,7 @@ impl MockChannelSubscriber {
 
 #[async_trait]
 impl ChannelSubscriber for MockChannelSubscriber {
-    async fn subscribe(&self, channel_name: &str) -> Result<MessageStream> {
+    async fn subscribe(&self, channel_name: &str) -> Result<ChatMessageStream> {
         let channel_name = channel_name.to_string();
         let message_receiver = self.message_sender.subscribe();
         let stream = BroadcastStream::new(message_receiver)

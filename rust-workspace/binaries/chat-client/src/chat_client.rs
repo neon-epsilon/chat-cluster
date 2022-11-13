@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Result;
 use dashmap::{mapref::entry::Entry, DashMap};
 
-use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, MessageStream};
+use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, ChatMessageStream};
 
 use crate::channel_subscriber::ChannelSubscriber;
 
@@ -64,7 +64,7 @@ impl ChannelSubscription {
     ///
     /// Will automatically stop writing to the message list when dropped.
     fn new(
-        incoming_message_stream: MessageStream,
+        incoming_message_stream: ChatMessageStream,
         message_list: Arc<Mutex<Vec<ChatMessage>>>,
     ) -> Self {
         let _stream_to_vec_forwarder =

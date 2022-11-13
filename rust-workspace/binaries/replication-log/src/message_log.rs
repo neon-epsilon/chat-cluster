@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, MessageStream};
+use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, ChatMessageStream};
 
 #[derive(Clone)]
 pub struct MessageLog {
@@ -10,7 +10,7 @@ pub struct MessageLog {
 }
 
 impl MessageLog {
-    pub fn new(incoming_messages: MessageStream) -> Self {
+    pub fn new(incoming_messages: ChatMessageStream) -> Self {
         let messages_received: Arc<Mutex<Vec<ChatMessage>>> = Default::default();
 
         let _message_forwarder = Arc::new(StreamToVecForwarder::new(
