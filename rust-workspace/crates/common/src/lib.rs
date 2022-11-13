@@ -12,6 +12,15 @@ pub struct ChatMessage {
     pub message_text: String,
 }
 
+impl ChatMessage {
+    pub fn new<S1: Into<String>, S2: Into<String>>(channel: S1, message_text: S2) -> Self {
+        ChatMessage {
+            channel: channel.into(),
+            message_text: message_text.into(),
+        }
+    }
+}
+
 //TODO: rename to ChatMessageStream
 pub type MessageStream = Pin<Box<dyn Stream<Item = Result<ChatMessage>> + Send>>;
 

@@ -13,3 +13,6 @@ futures = "0.3"
 redis = { version = "0.21", features = ["aio", "tokio-comp"] }
 tokio = { version = "1.20", features = ["macros", "rt-multi-thread"] }
 warp = "0.3"
+
+[dev-dependencies]
+insta = "1.18"

@@ -762,6 +762,7 @@ dependencies = [
  "anyhow",
  "common",
  "futures",
+ "insta",
  "redis",
  "tokio",
  "warp",
