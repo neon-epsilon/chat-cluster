@@ -1,7 +1,7 @@
 # Create an image that has only our Cargo.toml files without our actual source
 # code; we will use this to cache a builder image that already has the
 # dependencies from our Cargo.tomls compiled.
-FROM rust:1.62-slim as dependencies
+FROM rust:1.66-slim as dependencies
 
 # We need a sample main.rs file.
 RUN cargo new template_binary_crate
@@ -16,7 +16,7 @@ RUN \
   find ./binaries/ -maxdepth 1 -mindepth 1 -type d -exec cp ../template_binary_crate/src/main.rs {}/src/main.rs \;
 
 
-FROM rust:1.62-slim as builder
+FROM rust:1.66-slim as builder
 
 WORKDIR rust-workspace
 COPY --from=dependencies /rust-workspace/ .
