@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
-use common::{ChatMessageStream, DEFAULT_CHANNEL};
+use common::ChatMessageStream;
 use futures::StreamExt;
 use replication_log::message_log::MessageLog;
 use tokio;
@@ -16,7 +16,7 @@ async fn main() {
 
     let message_log = MessageLog::new(all_channels_stream);
 
-    let messages_route = warp::path!("messages")
+    let messages_route = warp::path!("messages" / String)
         .and(with_message_log(message_log))
         .and_then(messages_handler);
 
@@ -32,10 +32,12 @@ fn with_message_log(
     warp::any().map(move || message_log.clone())
 }
 
-// TODO: Do not only return messages from the default channel. Instead, obtain the channel name
-// from the endpoint, e.g. `/messages/some-channel` should return the messages for `some-channel`.
-async fn messages_handler(message_log: MessageLog) -> Result<impl Reply, Infallible> {
-    let serialized_messages = format!("{:?}", message_log.messages_received(DEFAULT_CHANNEL));
+async fn messages_handler(
+    channel_name: String,
+    message_log: MessageLog,
+) -> Result<impl Reply, Infallible> {
+    // TODO: proper serde_json serialization
+    let serialized_messages = format!("{:?}", message_log.messages_received(&channel_name));
 
     Ok(serialized_messages)
 }
