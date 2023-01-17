@@ -7,11 +7,12 @@ use warp::{Filter, Reply};
 
 #[tokio::main]
 async fn main() {
-    //TODO: make the redis url configurable via env vars or config file.
+    // TODO: make the redis url configurable via env vars or config file.
     let channel_subscriber =
         RedisChannelSubscriber::new("redis://message-broker-service:6379".to_string());
 
     let chat_client = ChatClient::new(Arc::new(channel_subscriber));
+    // TODO: connect to the replication log on startup and hand access to it to the chat client.
     chat_client.subscribe(DEFAULT_CHANNEL).await.unwrap();
 
     let messages_route = warp::path!("messages")

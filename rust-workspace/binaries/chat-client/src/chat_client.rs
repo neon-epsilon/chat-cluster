@@ -29,6 +29,7 @@ impl ChatClient {
 
     /// Returns whether the subscription was newly created, similar to
     /// [`HashSet::insert`](std::collections::HashSet::insert).
+    // TODO: retrieve already sent messages from replication log when subscribing.
     pub async fn subscribe(&self, channel_name: &str) -> Result<bool> {
         match self.active_subscriptions.entry(channel_name.to_string()) {
             Entry::Occupied(_) => Ok(false),
