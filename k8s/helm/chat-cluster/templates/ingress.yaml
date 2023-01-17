@@ -17,6 +17,13 @@ spec:
             name: chat-client-service
             port:
               number: 80
+      - path: /replication-log
+        pathType: Prefix
+        backend:
+          service:
+            name: replication-log-service
+            port:
+              number: 80
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
@@ -29,3 +36,4 @@ spec:
   stripPrefix:
     prefixes:
       - /chat-client
+      - /replication-log
