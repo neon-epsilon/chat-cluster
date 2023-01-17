@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
-use common::ChatMessageStream;
+use common::{ChatMessageStream, DEFAULT_CHANNEL};
 use futures::StreamExt;
 use replication_log::message_log::MessageLog;
 use tokio;
@@ -32,8 +32,10 @@ fn with_message_log(
     warp::any().map(move || message_log.clone())
 }
 
+// TODO: Do not only return messages from the default channel. Instead, obtain the channel name
+// from the endpoint, e.g. `/messages/some-channel` should return the messages for `some-channel`.
 async fn messages_handler(message_log: MessageLog) -> Result<impl Reply, Infallible> {
-    let serialized_messages = format!("{:?}", message_log.messages_received());
+    let serialized_messages = format!("{:?}", message_log.messages_received(DEFAULT_CHANNEL));
 
     Ok(serialized_messages)
 }

@@ -1,6 +1,7 @@
 use std::{convert::Infallible, sync::Arc};
 
 use chat_client::{channel_subscriber::RedisChannelSubscriber, chat_client::ChatClient};
+use common::DEFAULT_CHANNEL;
 use tokio;
 use warp::{Filter, Reply};
 
@@ -11,7 +12,7 @@ async fn main() {
         RedisChannelSubscriber::new("redis://message-broker-service:6379".to_string());
 
     let chat_client = ChatClient::new(Arc::new(channel_subscriber));
-    chat_client.subscribe("default-channel").await.unwrap();
+    chat_client.subscribe(DEFAULT_CHANNEL).await.unwrap();
 
     let messages_route = warp::path!("messages")
         .and(with_chat_client(chat_client))

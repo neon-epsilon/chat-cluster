@@ -6,6 +6,8 @@ use redis::Msg;
 
 pub mod stream_to_vec_forwarder;
 
+pub static DEFAULT_CHANNEL: &str = "default-channel";
+
 #[derive(Clone, Debug)]
 pub struct ChatMessage {
     pub channel: String,

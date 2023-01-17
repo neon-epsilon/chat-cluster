@@ -24,8 +24,13 @@ impl MessageLog {
         }
     }
 
-    //TODO: we need an API that returns messages for a chat channel, not all of them.
-    pub fn messages_received(&self) -> Vec<ChatMessage> {
-        self.messages_received.lock().unwrap().clone()
+    pub fn messages_received(&self, channel: &str) -> Vec<ChatMessage> {
+        let all_messages = self.messages_received.lock().unwrap();
+
+        all_messages
+            .iter()
+            .filter(|message| message.channel == channel)
+            .cloned()
+            .collect()
     }
 }
