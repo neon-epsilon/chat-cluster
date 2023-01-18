@@ -3,12 +3,13 @@ use std::pin::Pin;
 use anyhow::Result;
 use futures::Stream;
 use redis::Msg;
+use serde::{Deserialize, Serialize};
 
 pub mod stream_to_vec_forwarder;
 
 pub static DEFAULT_CHANNEL: &str = "default-channel";
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ChatMessage {
     pub channel: String,
     pub message_text: String,

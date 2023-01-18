@@ -28,7 +28,7 @@ async fn main() {
 
 fn with_message_log(
     message_log: MessageLog,
-) -> impl Filter<Extract = (MessageLog,), Error = std::convert::Infallible> + Clone {
+) -> impl Filter<Extract = (MessageLog,), Error = Infallible> + Clone {
     warp::any().map(move || message_log.clone())
 }
 
@@ -36,10 +36,16 @@ async fn messages_handler(
     channel_name: String,
     message_log: MessageLog,
 ) -> Result<impl Reply, Infallible> {
-    // TODO: proper serde_json serialization
-    let serialized_messages = format!("{:?}", message_log.messages_received(&channel_name));
-
-    Ok(serialized_messages)
+    match serde_json::to_string(&message_log.messages_received(&channel_name)) {
+        Ok(serialized_messages) => Ok(warp::reply::with_status(
+            serialized_messages,
+            warp::http::StatusCode::OK,
+        )),
+        Err(err) => Ok(warp::reply::with_status(
+            err.to_string(),
+            warp::http::StatusCode::INTERNAL_SERVER_ERROR,
+        )),
+    }
 }
 
 async fn subscribe_all_channels(redis_url: &str) -> Result<ChatMessageStream> {

@@ -9,5 +9,6 @@ edition = "2021"
 anyhow = { workspace = true }
 futures = { workspace = true }
 redis = { workspace = true }
+serde = { workspace = true }
 stream-cancel = "0.8"
 tokio = { workspace = true }
