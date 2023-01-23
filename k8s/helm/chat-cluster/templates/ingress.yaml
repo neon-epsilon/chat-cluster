@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: chat-client-ingress
+  name: chat-cluster-ingress
   annotations:
     kubernetes.io/ingress.class: traefik
     traefik.ingress.kubernetes.io/router.middlewares: default-strip-prefix@kubernetescrd
@@ -10,11 +10,11 @@ spec:
   rules:
   - http:
       paths:
-      - path: /chat-client
+      - path: /chat-server
         pathType: Prefix
         backend:
           service:
-            name: chat-client-service
+            name: chat-server-service
             port:
               number: 80
       - path: /replication-log
@@ -35,5 +35,5 @@ spec:
   #  - ^/[^/]+
   stripPrefix:
     prefixes:
-      - /chat-client
+      - /chat-server
       - /replication-log

@@ -12,11 +12,11 @@ CURRENT_COMMIT_SHA=$(cd $SCRIPT_DIR && git rev-parse --short HEAD)
 TIMESTAMP=$(date +"%s")
 DOCKER_TAG_SUFFIX=-$CURRENT_COMMIT_SHA-$TIMESTAMP
 
-# Publish chat-client image.
-CHAT_CLIENT_DOCKER_TAG=chat-client$DOCKER_TAG_SUFFIX
-docker build --target chat-client -t $DOCKER_REPOSITORY/$CHAT_CLIENT_DOCKER_TAG \
+# Publish chat-server image.
+CHAT_SERVER_DOCKER_TAG=chat-server$DOCKER_TAG_SUFFIX
+docker build --target chat-server -t $DOCKER_REPOSITORY/$CHAT_SERVER_DOCKER_TAG \
   -f $RUST_WORKSPACE_DIR/Dockerfile $RUST_WORKSPACE_DIR
-docker push $DOCKER_REPOSITORY/$CHAT_CLIENT_DOCKER_TAG
+docker push $DOCKER_REPOSITORY/$CHAT_SERVER_DOCKER_TAG
 
 # Publish replication-log image.
 REPLICATION_LOG_DOCKER_TAG=replication-log$DOCKER_TAG_SUFFIX
@@ -26,6 +26,6 @@ docker push $DOCKER_REPOSITORY/$REPLICATION_LOG_DOCKER_TAG
 
 # Make images known to helm.
 tee $SCRIPT_DIR/helm/chat-cluster/values.yaml << EOF
-ChatClientDockerTag: $CHAT_CLIENT_DOCKER_TAG
+ChatServerDockerTag: $CHAT_SERVER_DOCKER_TAG
 ReplicationLogDockerTag: $REPLICATION_LOG_DOCKER_TAG
 EOF

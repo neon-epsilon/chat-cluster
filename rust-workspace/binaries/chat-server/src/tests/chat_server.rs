@@ -8,7 +8,7 @@ use tokio_stream::wrappers::BroadcastStream;
 
 use common::{ChatMessage, ChatMessageStream};
 
-use crate::{channel_subscriber::ChannelSubscriber, chat_client::ChatClient};
+use crate::{channel_subscriber::ChannelSubscriber, chat_server::ChatServer};
 
 #[derive(Clone)]
 pub struct MockChannelSubscriber {
@@ -52,7 +52,7 @@ impl ChannelSubscriber for MockChannelSubscriber {
 #[tokio::test]
 async fn subscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
+    let chat_client = ChatServer::new(Arc::new(mock_channel_subscriber.clone()));
 
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
 
@@ -97,7 +97,7 @@ async fn subscribe() {
 #[tokio::test]
 async fn unsubscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let chat_client = ChatClient::new(Arc::new(mock_channel_subscriber.clone()));
+    let chat_client = ChatServer::new(Arc::new(mock_channel_subscriber.clone()));
 
     let channel_name = "test-channel".to_string();
     chat_client.subscribe(&channel_name).await.unwrap();

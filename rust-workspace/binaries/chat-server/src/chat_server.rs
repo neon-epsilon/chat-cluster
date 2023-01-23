@@ -8,15 +8,15 @@ use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, ChatMes
 use crate::channel_subscriber::ChannelSubscriber;
 
 #[derive(Clone)]
-pub struct ChatClient {
+pub struct ChatServer {
     channel_subscriber: Arc<dyn ChannelSubscriber>,
     messages_received: Arc<Mutex<Vec<ChatMessage>>>,
     active_subscriptions: Arc<DashMap<String, ChannelSubscription>>,
 }
 
-impl ChatClient {
+impl ChatServer {
     pub fn new(channel_subscriber: Arc<dyn ChannelSubscriber>) -> Self {
-        ChatClient {
+        ChatServer {
             channel_subscriber,
             messages_received: Default::default(),
             active_subscriptions: Default::default(),

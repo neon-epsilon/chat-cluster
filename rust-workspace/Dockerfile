@@ -55,14 +55,14 @@ RUN addgroup -S $APP_USER \
 
 
 # The actual images
-FROM web-server-base AS chat-client
-WORKDIR /usr/src/chat-client
+FROM web-server-base AS chat-server
+WORKDIR /usr/src/chat-server
 
-COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/chat-client .
+COPY --from=builder /rust-workspace/target/x86_64-unknown-linux-musl/release/chat-server .
 RUN chown -R $APP_USER:$APP_USER .
 
 USER $APP_USER
-CMD ["./chat-client"]
+CMD ["./chat-server"]
 
 
 FROM web-server-base AS replication-log
