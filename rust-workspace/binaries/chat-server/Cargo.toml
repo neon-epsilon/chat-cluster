@@ -20,4 +20,5 @@ warp = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }
+httpmock = "0.6"
 tokio-stream = { version = "0.1", features = ["sync"] }
