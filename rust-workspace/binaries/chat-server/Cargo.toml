@@ -13,6 +13,8 @@ async-trait = "0.1"
 dashmap = "5.3"
 futures = { workspace = true }
 redis = { workspace = true }
+reqwest = "0.11"
+serde_json = { workspace = true }
 tokio = { workspace = true }
 warp = { workspace = true }
 
