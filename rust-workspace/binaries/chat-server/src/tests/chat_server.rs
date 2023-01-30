@@ -124,9 +124,28 @@ async fn unsubscribe() {
 
     let channel_name = "test-channel".to_string();
     chat_server.subscribe(&channel_name).await.unwrap();
-    chat_server.unsubscribe(&channel_name);
-    // Wait a little otherwise we might still be subscribed.
+
+    mock_channel_subscriber
+        .publish_message(ChatMessage {
+            channel: channel_name.clone(),
+            message_text:
+                "This message should only show up until we unsubscribe."
+                    .to_string(),
+        })
+        .unwrap();
+    // Make sure the message had enough time to be handled.
     tokio::time::sleep(Duration::from_millis(100)).await;
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @r###"
+    [
+        ChatMessage {
+            channel: "test-channel",
+            message_text: "This message should only show up until we unsubscribe.",
+        },
+    ]
+    "###);
+
+    chat_server.unsubscribe(&channel_name);
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 
     mock_channel_subscriber
         .publish_message(ChatMessage {
@@ -136,7 +155,6 @@ async fn unsubscribe() {
                     .to_string(),
         })
         .unwrap();
-    // Make sure the message had enough time to be handled.
     tokio::time::sleep(Duration::from_millis(100)).await;
     insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 }

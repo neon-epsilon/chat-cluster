@@ -56,7 +56,14 @@ impl ChatServer {
     /// Returns whether we have been subscribed in the first place.
     pub fn unsubscribe(&self, channel_name: &str) -> bool {
         // The subscription should stop providing messages once it is dropped.
-        self.active_subscriptions.remove(channel_name).is_some()
+        let was_subscribed = self.active_subscriptions.remove(channel_name).is_some();
+
+        if was_subscribed {
+            let mut message_list = self.messages_received.lock().unwrap();
+            message_list.retain(|chat_message| chat_message.channel != channel_name);
+        }
+
+        was_subscribed
     }
 }
 
