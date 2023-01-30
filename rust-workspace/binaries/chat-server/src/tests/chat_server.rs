@@ -39,13 +39,15 @@ impl MockChannelSubscriber {
     }
 }
 
-struct MockReplicationLogClient {}
+struct MockReplicationLogClient {
+    pub messages: Vec<ChatMessage>,
+}
 
 #[async_trait]
 impl ReplicationLogClient for MockReplicationLogClient {
     async fn get_messages_for_channel(&self, channel_name: &str) -> Result<Vec<ChatMessage>> {
         //TODO: return some messages
-        Ok(vec![])
+        Ok(self.messages.clone())
     }
 }
 
@@ -65,7 +67,7 @@ impl ChannelSubscriber for MockChannelSubscriber {
 #[tokio::test]
 async fn subscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let mock_replication_log_client = MockReplicationLogClient {};
+    let mock_replication_log_client = MockReplicationLogClient { messages: vec![] };
     let chat_client = ChatServer::new(
         Arc::new(mock_channel_subscriber.clone()),
         Arc::new(mock_replication_log_client),
@@ -114,7 +116,7 @@ async fn subscribe() {
 #[tokio::test]
 async fn unsubscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let mock_replication_log_client = MockReplicationLogClient {};
+    let mock_replication_log_client = MockReplicationLogClient { messages: vec![] };
     let chat_client = ChatServer::new(
         Arc::new(mock_channel_subscriber.clone()),
         Arc::new(mock_replication_log_client),
@@ -137,4 +139,29 @@ async fn unsubscribe() {
     // Make sure the message had enough time to be handled.
     tokio::time::sleep(Duration::from_millis(100)).await;
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
+}
+
+#[tokio::test]
+async fn retrieve_messages_from_replication_log() {
+    let mock_channel_subscriber = MockChannelSubscriber::new();
+    let mock_replication_log_client = MockReplicationLogClient {
+        messages: vec![
+            ChatMessage::new("test-channel1", "message 1 on test-channel1"),
+            ChatMessage::new("test-channel2", "message 1 on test-channel2"),
+            ChatMessage::new("test-channel1", "message 2 on test-channel1"),
+            ChatMessage::new("test-channel2", "message 2 on test-channel2"),
+        ],
+    };
+
+    let chat_client = ChatServer::new(
+        Arc::new(mock_channel_subscriber.clone()),
+        Arc::new(mock_replication_log_client),
+    );
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
+
+    chat_client.subscribe("test-channel1").await.unwrap();
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+
+    chat_client.subscribe("test-channel2").await.unwrap();
+    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
 }
