@@ -34,20 +34,39 @@ impl ChatServer {
 
     /// Returns whether the subscription was newly created, similar to
     /// [`HashSet::insert`](std::collections::HashSet::insert).
-    // TODO: retrieve already sent messages from replication log when subscribing.
     pub async fn subscribe(&self, channel_name: &str) -> Result<bool> {
         match self.active_subscriptions.entry(channel_name.to_string()) {
             Entry::Occupied(_) => Ok(false),
             Entry::Vacant(empty_entry) => {
-                //TODO: Retrieve already sent messages from message log after subscription
                 let incoming_message_stream =
                     self.channel_subscriber.subscribe(channel_name).await?;
-                let message_list = Arc::clone(&self.messages_received);
 
-                let subscription = ChannelSubscription::new(incoming_message_stream, message_list);
+                // Retrieve messages that were previously sent on the channel.
+                //
+                // There is a chance that this already contains messages that are also sent to
+                // incoming_message_stream - this could be avoided by identifying the messages via
+                // some sort of id.
+                //
+                // There is also a small chance that a message takes a long time to arrive at the
+                // replication_log_client but we're too late to receive it from the
+                // channel_subscriber - in this case we will never receive the message. This could
+                // be avoided by waiting a bit after subscribing to the channel before retrieving
+                // the previous messages.
+                let previous_messages = self
+                    .replication_log_client
+                    .get_messages_for_channel(channel_name)
+                    .await?;
+                {
+                    // Open a new block to reduce the scope in which the mutex is being held.
+                    let mut message_list = self.messages_received.lock().unwrap();
+                    message_list.extend(previous_messages);
+                }
+
+                let message_list_clone = Arc::clone(&self.messages_received);
+                let subscription =
+                    ChannelSubscription::new(incoming_message_stream, message_list_clone);
 
                 empty_entry.insert(subscription);
-
                 Ok(true)
             }
         }

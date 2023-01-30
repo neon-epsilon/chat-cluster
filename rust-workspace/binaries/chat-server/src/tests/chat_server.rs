@@ -46,8 +46,13 @@ struct MockReplicationLogClient {
 #[async_trait]
 impl ReplicationLogClient for MockReplicationLogClient {
     async fn get_messages_for_channel(&self, channel_name: &str) -> Result<Vec<ChatMessage>> {
-        //TODO: return some messages
-        Ok(self.messages.clone())
+        let messages_for_channel = self
+            .messages
+            .iter()
+            .filter(|chat_message| chat_message.channel == channel_name)
+            .cloned()
+            .collect();
+        Ok(messages_for_channel)
     }
 }
 
@@ -128,9 +133,7 @@ async fn unsubscribe() {
     mock_channel_subscriber
         .publish_message(ChatMessage {
             channel: channel_name.clone(),
-            message_text:
-                "This message should only show up until we unsubscribe."
-                    .to_string(),
+            message_text: "This message should only show up until we unsubscribe.".to_string(),
         })
         .unwrap();
     // Make sure the message had enough time to be handled.
@@ -178,8 +181,38 @@ async fn retrieve_messages_from_replication_log() {
     insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 
     chat_server.subscribe("test-channel1").await.unwrap();
-    insta::assert_debug_snapshot!(chat_server.messages_received(), @"");
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @r###"
+    [
+        ChatMessage {
+            channel: "test-channel1",
+            message_text: "message 1 on test-channel1",
+        },
+        ChatMessage {
+            channel: "test-channel1",
+            message_text: "message 2 on test-channel1",
+        },
+    ]
+    "###);
 
     chat_server.subscribe("test-channel2").await.unwrap();
-    insta::assert_debug_snapshot!(chat_server.messages_received(), @"");
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @r###"
+    [
+        ChatMessage {
+            channel: "test-channel1",
+            message_text: "message 1 on test-channel1",
+        },
+        ChatMessage {
+            channel: "test-channel1",
+            message_text: "message 2 on test-channel1",
+        },
+        ChatMessage {
+            channel: "test-channel2",
+            message_text: "message 1 on test-channel2",
+        },
+        ChatMessage {
+            channel: "test-channel2",
+            message_text: "message 2 on test-channel2",
+        },
+    ]
+    "###);
 }
