@@ -8,10 +8,13 @@ use tokio_stream::wrappers::BroadcastStream;
 
 use common::{ChatMessage, ChatMessageStream};
 
-use crate::{channel_subscriber::ChannelSubscriber, chat_server::ChatServer};
+use crate::{
+    channel_subscriber::ChannelSubscriber, chat_server::ChatServer,
+    replication_log_client::ReplicationLogClient,
+};
 
 #[derive(Clone)]
-pub struct MockChannelSubscriber {
+struct MockChannelSubscriber {
     message_sender: Sender<ChatMessage>,
     /// Keep a dummy receiver alive so that we can "publish" messages even if there are no active
     /// subscribers.
@@ -36,6 +39,16 @@ impl MockChannelSubscriber {
     }
 }
 
+struct MockReplicationLogClient {}
+
+#[async_trait]
+impl ReplicationLogClient for MockReplicationLogClient {
+    async fn get_messages_for_channel(&self, channel_name: &str) -> Result<Vec<ChatMessage>> {
+        //TODO: return some messages
+        Ok(vec![])
+    }
+}
+
 #[async_trait]
 impl ChannelSubscriber for MockChannelSubscriber {
     async fn subscribe(&self, channel_name: &str) -> Result<ChatMessageStream> {
@@ -52,7 +65,11 @@ impl ChannelSubscriber for MockChannelSubscriber {
 #[tokio::test]
 async fn subscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let chat_client = ChatServer::new(Arc::new(mock_channel_subscriber.clone()));
+    let mock_replication_log_client = MockReplicationLogClient {};
+    let chat_client = ChatServer::new(
+        Arc::new(mock_channel_subscriber.clone()),
+        Arc::new(mock_replication_log_client),
+    );
 
     insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
 
@@ -97,7 +114,11 @@ async fn subscribe() {
 #[tokio::test]
 async fn unsubscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
-    let chat_client = ChatServer::new(Arc::new(mock_channel_subscriber.clone()));
+    let mock_replication_log_client = MockReplicationLogClient {};
+    let chat_client = ChatServer::new(
+        Arc::new(mock_channel_subscriber.clone()),
+        Arc::new(mock_replication_log_client),
+    );
 
     let channel_name = "test-channel".to_string();
     chat_client.subscribe(&channel_name).await.unwrap();

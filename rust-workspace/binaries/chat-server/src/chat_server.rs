@@ -5,21 +5,26 @@ use dashmap::{mapref::entry::Entry, DashMap};
 
 use common::{stream_to_vec_forwarder::StreamToVecForwarder, ChatMessage, ChatMessageStream};
 
-use crate::channel_subscriber::ChannelSubscriber;
+use crate::{channel_subscriber::ChannelSubscriber, replication_log_client::ReplicationLogClient};
 
 #[derive(Clone)]
 pub struct ChatServer {
+    active_subscriptions: Arc<DashMap<String, ChannelSubscription>>,
     channel_subscriber: Arc<dyn ChannelSubscriber>,
     messages_received: Arc<Mutex<Vec<ChatMessage>>>,
-    active_subscriptions: Arc<DashMap<String, ChannelSubscription>>,
+    replication_log_client: Arc<dyn ReplicationLogClient>,
 }
 
 impl ChatServer {
-    pub fn new(channel_subscriber: Arc<dyn ChannelSubscriber>) -> Self {
+    pub fn new(
+        channel_subscriber: Arc<dyn ChannelSubscriber>,
+        replication_log_client: Arc<dyn ReplicationLogClient>,
+    ) -> Self {
         ChatServer {
+            active_subscriptions: Default::default(),
             channel_subscriber,
             messages_received: Default::default(),
-            active_subscriptions: Default::default(),
+            replication_log_client,
         }
     }
 

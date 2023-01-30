@@ -10,13 +10,7 @@ pub trait ChannelSubscriber: Send + Sync {
 }
 
 pub struct RedisChannelSubscriber {
-    redis_url: String,
-}
-
-impl RedisChannelSubscriber {
-    pub fn new(redis_url: String) -> Self {
-        RedisChannelSubscriber { redis_url }
-    }
+    pub redis_url: String,
 }
 
 #[async_trait]

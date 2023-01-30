@@ -1,17 +1,26 @@
 use std::{convert::Infallible, sync::Arc};
 
-use chat_server::{channel_subscriber::RedisChannelSubscriber, chat_server::ChatServer};
+use chat_server::{
+    channel_subscriber::RedisChannelSubscriber, chat_server::ChatServer,
+    replication_log_client::ReqwestReplicationLogClient,
+};
 use common::DEFAULT_CHANNEL;
 use tokio;
 use warp::{Filter, Reply};
 
 #[tokio::main]
 async fn main() {
-    let channel_subscriber =
-        RedisChannelSubscriber::new("redis://message-broker-service:6379".to_string());
+    let channel_subscriber = RedisChannelSubscriber {
+        redis_url: "redis://message-broker-service:6379".to_string(),
+    };
+    let replication_log_client = ReqwestReplicationLogClient {
+        replication_log_url: "http://replication-log-service:80".to_string(),
+    };
 
-    let chat_server = ChatServer::new(Arc::new(channel_subscriber));
-    // TODO: connect to the replication log on startup and hand access to it to the chat server.
+    let chat_server = ChatServer::new(
+        Arc::new(channel_subscriber),
+        Arc::new(replication_log_client),
+    );
     chat_server.subscribe(DEFAULT_CHANNEL).await.unwrap();
 
     let messages_route = warp::path!("messages")

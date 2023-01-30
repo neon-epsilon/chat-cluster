@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use common::ChatMessage;
 
 #[async_trait]
-pub trait ReplicationLogClient {
+pub trait ReplicationLogClient: Send + Sync {
     async fn get_messages_for_channel(&self, channel_name: &str) -> Result<Vec<ChatMessage>>;
 }
 
