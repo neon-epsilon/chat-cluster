@@ -68,15 +68,15 @@ impl ChannelSubscriber for MockChannelSubscriber {
 async fn subscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
     let mock_replication_log_client = MockReplicationLogClient { messages: vec![] };
-    let chat_client = ChatServer::new(
+    let chat_server = ChatServer::new(
         Arc::new(mock_channel_subscriber.clone()),
         Arc::new(mock_replication_log_client),
     );
 
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 
     let channel_name = "test-channel".to_string();
-    chat_client.subscribe(&channel_name).await.unwrap();
+    chat_server.subscribe(&channel_name).await.unwrap();
 
     mock_channel_subscriber
         .publish_message(ChatMessage {
@@ -86,7 +86,7 @@ async fn subscribe() {
         .unwrap();
     // Since the message is handled asynchronously, we have to wait a little.
     tokio::time::sleep(Duration::from_millis(100)).await;
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @r###"
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @r###"
     [
         ChatMessage {
             channel: "test-channel",
@@ -103,7 +103,7 @@ async fn subscribe() {
         })
         .unwrap();
     tokio::time::sleep(Duration::from_millis(100)).await;
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @r###"
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @r###"
     [
         ChatMessage {
             channel: "test-channel",
@@ -117,14 +117,14 @@ async fn subscribe() {
 async fn unsubscribe() {
     let mock_channel_subscriber = MockChannelSubscriber::new();
     let mock_replication_log_client = MockReplicationLogClient { messages: vec![] };
-    let chat_client = ChatServer::new(
+    let chat_server = ChatServer::new(
         Arc::new(mock_channel_subscriber.clone()),
         Arc::new(mock_replication_log_client),
     );
 
     let channel_name = "test-channel".to_string();
-    chat_client.subscribe(&channel_name).await.unwrap();
-    chat_client.unsubscribe(&channel_name);
+    chat_server.subscribe(&channel_name).await.unwrap();
+    chat_server.unsubscribe(&channel_name);
     // Wait a little otherwise we might still be subscribed.
     tokio::time::sleep(Duration::from_millis(100)).await;
 
@@ -138,7 +138,7 @@ async fn unsubscribe() {
         .unwrap();
     // Make sure the message had enough time to be handled.
     tokio::time::sleep(Duration::from_millis(100)).await;
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 }
 
 #[tokio::test]
@@ -153,15 +153,15 @@ async fn retrieve_messages_from_replication_log() {
         ],
     };
 
-    let chat_client = ChatServer::new(
+    let chat_server = ChatServer::new(
         Arc::new(mock_channel_subscriber.clone()),
         Arc::new(mock_replication_log_client),
     );
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"[]");
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"[]");
 
-    chat_client.subscribe("test-channel1").await.unwrap();
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+    chat_server.subscribe("test-channel1").await.unwrap();
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"");
 
-    chat_client.subscribe("test-channel2").await.unwrap();
-    insta::assert_debug_snapshot!(chat_client.messages_received(), @"");
+    chat_server.subscribe("test-channel2").await.unwrap();
+    insta::assert_debug_snapshot!(chat_server.messages_received(), @"");
 }
