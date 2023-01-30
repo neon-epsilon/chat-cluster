@@ -14,7 +14,7 @@ async fn main() {
         redis_url: "redis://message-broker-service:6379".to_string(),
     };
     let replication_log_client = ReqwestReplicationLogClient {
-        replication_log_url: "http://replication-log-service:80".to_string(),
+        replication_log_url: "http://replication-log-service:80/messages".to_string(),
     };
 
     let chat_server = ChatServer::new(
