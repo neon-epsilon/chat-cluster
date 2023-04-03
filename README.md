@@ -45,15 +45,17 @@ kubectl exec -it service/message-broker-service -- redis-cli
 127.0.0.1:6379> PUBLISH default-channel "Hello everyone!"
 ```
 
-To check that it was received, use the `messages` endpoint:
+To check that it was received, access the `chat-server` service:
 
 ```bash
 curl localhost:8081/chat-server/messages
 ```
 
-## Inspect the replication log
+The message should also be stored and accessible through the `replication-log` service:
 
-TODO
+```bash
+curl localhost:8081/replication-log/messages/default-channel
+```
 
 ## Confirm that rolling upgrades work
 
