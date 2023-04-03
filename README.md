@@ -23,7 +23,7 @@ Create a local cluster and container registry:
 ./k8s/create_cluster.sh
 ```
 
-Build the containers and publish it to the registry:
+Build the containers and publish them to the registry:
 
 ```bash
 ./k8s/publish_images.sh
