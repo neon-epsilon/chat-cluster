@@ -57,11 +57,21 @@ The message should also be stored and accessible through the `replication-log` s
 curl localhost:8081/replication-log/messages/default-channel
 ```
 
-## Confirm that rolling upgrades work
+## Confirm that replication log is correctly being used
 
-TODO: Add a manual or automatic test to demonstrate that scaling/rolling upgrades work, more specifically, that new chat servers retrieve chat messages from the replication log.
+When a new `chat-server` instance starts up, it should retrieve the list of already sent messages from the replication log. To test this, force a re-deployment:
 
-## Delete the cluster after use
+```bash
+kubectl rollout restart deploy chat-server-deployment
+```
+
+Once the `chat-server` instances are back up, we can check that they retrieved the previously sent messages:
+
+```bash
+curl localhost:8081/chat-server/messages
+```
+
+# Delete the cluster after use
 
 ```bash
 k3d cluster delete mycluster
