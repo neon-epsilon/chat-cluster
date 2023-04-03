@@ -14,7 +14,7 @@ async fn reqwest_client_get_messages() {
     ];
 
     let _default_channel_mock = server.mock(|when, then| {
-        when.method(GET).path(format!("/{}", DEFAULT_CHANNEL));
+        when.method(GET).path(format!("/{DEFAULT_CHANNEL}"));
         then.status(200)
             .body(serde_json::to_string(&messages_on_default_channel).unwrap());
     });
