@@ -9,7 +9,7 @@ For a highly concurrent and scalable chat service, there should be a variable am
 We assume that a user establishes a connection with only one node (e.g. via WebSockets) which they stay connected to.
 The user should be able to obtain the already sent chat messages from any node (a read-only request) and also be able to send a message which needs to be distributed to every node (a write request).
 We accept some anomalies like read-after-write inconsistencies (user's own chat messages may not be immediately visible to them, or not in the order they sent them).
-We require, however, that all chat messages that were successfully sent will be read by every node at some point in time (eventual consistency).
+However, we require eventual consistency, so that all chat messages that were successfully sent will be read by every node at some point in time.
 We also require that new nodes that are added while scaling (or performing a rolling update) still obtain all already sent messages and can serve them to users.
 
 The main goal of this PoC is to satisfy these requirements in a simple way without having to implement a complex replication protocol (like Paxos or Raft) ourselves.
@@ -17,11 +17,25 @@ The main goal of this PoC is to satisfy these requirements in a simple way witho
 # Architecture
 
 An often used architecture for data-heavy services is having one leader and multiple followers (replicas).
-Any write request can only be executed by the leader, which propagates the data change to the followers.
+To deal with concurrent write requests, some conflict resolution is typically necessary.
+Leader-follower architecture enables this by allowing only the leader to process writes, which then propagates the data change to the followers.
 Read-only requests can be served from the leader and any follower.
-This allows for a highly concurrent service which can be scaled easily by starting up new followers.
+This allows for a highly concurrent and scalable service by simply starting up additional followers when needed.
 
-When implementing a leader-follower architecture, one has to solve the problem of promoting a follower to a leader (a failover), when e.g. the leader crashes or becomes unavailable due to a flaky network connection.
+```mermaid
+sequenceDiagram
+  actor user
+  participant leader
+  participant follower1
+  participant follower2
+
+  user->>leader: write request
+  leader->>user: ok
+  leader->>follower1: data change
+  leader->>follower2: data change
+```
+
+When implementing a leader-follower architecture, one has to solve the problem of promoting a follower to a leader (failover), when e.g. the leader crashes or becomes unavailable due to a flaky network connection.
 
 TODO
 
