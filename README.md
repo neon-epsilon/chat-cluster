@@ -16,6 +16,8 @@ The main goal of this PoC is to satisfy these requirements in a simple way witho
 
 # Architecture
 
+## Classical leader-follower architecture
+
 An often used architecture for data-heavy services is having one leader and multiple followers (replicas).
 To deal with concurrent write requests, some conflict resolution is typically necessary.
 Leader-follower architecture enables this by allowing only the leader to process writes, which then propagates the data change to the followers.
@@ -48,6 +50,63 @@ sequenceDiagram
 ```
 
 When implementing a leader-follower architecture, one has to solve the problem of promoting a follower to a leader (failover), when e.g. the leader crashes or becomes unavailable due to a flaky network connection.
+A popular way to perform the failover is applying a leader election protocol like [Paxos](https://en.wikipedia.org/wiki/Paxos_(computer_science)) or [Raft](https://en.wikipedia.org/wiki/Raft_(algorithm)).
+However, implementing this comes with a lot of complexity and risk of introducing hard to find errors into the system (notably, Paxos in particular is notoriously complicated).
+
+## Idea: simplification by splitting the leader's responsibilities
+
+In leader-follower architecture, each node can be a leader and a follower during its lifespan (depending on the protocol used, even multiple times).
+This means that it has to be able to:
+- serve read requests,
+- perform write requests and propagate the data change to other nodes, and
+- elect or become a leader.
+
+Additionally, this has to be implemented in a way that also works when the cluster is scaled by adding/removing nodes.
+
+This is a lot of responsibilities that all have to be handled by the same node.
+
+The main idea that I wanted to try is splitting the leader's responsibilities into a separate service altogether.
+This service's job is then to simply track all write requests and inform all nodes of any data changes - it's simply a replication log.
+
+Write requests are performed by forwarding them to the replication log first, which then informs all the nodes from the chat service.
+
+```mermaid
+sequenceDiagram
+  actor user
+  participant replication log
+  box transparent chat service
+    participant node1
+    participant node2
+  end
+
+  user->>node1: write request
+  node1->>replication log: forward write request
+  node1->>user: ok
+  replication log->>node1: data change
+  replication log->>node2: data change
+```
+
+Read requests work the same way as before and do not involve the replication log.
+
+```mermaid
+sequenceDiagram
+  actor user
+  participant replication log
+  box transparent chat service
+    participant node1
+    participant node2
+  end
+
+  user->>node1: read request
+  node1->>user: data
+```
+
+To make this architecture robust and scalable, however, the replication log itself needs to scale to multiple nodes and likely has to perform failovers internally.
+However, this problem is at least separated from the remaining business logic (in the example of a chat service: holding the websocket connection, showing the right chat messages, enabling users to join/leave chat rooms etc.).
+The replication log can be improved over time without affecting the business logic as well:
+For instance, we could start simple and use a single-node key-value store that persists its data to disk; later, when our requirements change, we can switch to something more scalable and e.g. build the replication log on top of [etcd](https://etcd.io/); or if we need something custom to satisfy our throughput and latency requirements better, we can still implement our own leader-follower architecture but for the replication log only.
+
+## Detailed architecture
 
 TODO
 
