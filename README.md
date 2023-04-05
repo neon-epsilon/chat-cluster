@@ -19,8 +19,6 @@ The main goal of this PoC is to satisfy these requirements in a simple way witho
 An often used architecture for data-heavy services is having one leader and multiple followers (replicas).
 To deal with concurrent write requests, some conflict resolution is typically necessary.
 Leader-follower architecture enables this by allowing only the leader to process writes, which then propagates the data change to the followers.
-Read-only requests can be served from the leader and any follower.
-This allows for a highly concurrent and scalable service by simply starting up additional followers when needed.
 
 ```mermaid
 sequenceDiagram
@@ -33,6 +31,20 @@ sequenceDiagram
   leader->>user: ok
   leader->>follower1: data change
   leader->>follower2: data change
+```
+
+Read-only requests can be served from the leader and any follower.
+This allows for a highly concurrent and scalable service by simply starting up additional followers when needed.
+
+```mermaid
+sequenceDiagram
+  actor user
+  participant leader
+  participant follower1
+  participant follower2
+
+  user->>follower1: read request
+  follower1->>user: data
 ```
 
 When implementing a leader-follower architecture, one has to solve the problem of promoting a follower to a leader (failover), when e.g. the leader crashes or becomes unavailable due to a flaky network connection.
