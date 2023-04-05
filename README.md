@@ -73,11 +73,11 @@ Write requests are performed by forwarding them to the replication log first, wh
 ```mermaid
 sequenceDiagram
   actor user
-  participant replication log
   box transparent chat service
     participant node1
     participant node2
   end
+  participant replication log
 
   user->>node1: write request
   node1->>replication log: forward write request
@@ -91,11 +91,11 @@ Read requests work the same way as before and do not involve the replication log
 ```mermaid
 sequenceDiagram
   actor user
-  participant replication log
   box transparent chat service
     participant node1
     participant node2
   end
+  participant replication log
 
   user->>node1: read request
   node1->>user: data
