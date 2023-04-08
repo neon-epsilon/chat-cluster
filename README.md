@@ -108,7 +108,30 @@ For instance, we could start simple and use a single-node key-value store that p
 
 ## Detailed architecture
 
-TODO
+The `chat-cluster` runs in kubernetes.
+(I use k3d to run the cluster locally, but this could also be run on a managed k8s platform.)
+
+It is comprised of the following services:
+
+- `message-broker-service` is responsible for sending (chat) messages between services.
+  It is implemented using redis' [pub/sub mechanism](https://redis.io/docs/manual/pubsub/).
+  This is a sufficient solution for this PoC; in production, however, I would use something more robust and fully-featured, like Kafka.
+- `chat-server-service` is the dummy chat application.
+  It is a simple web server built with Rust.
+  Its instances are designed to be able to join multiple chat channels (whichever the connected users need) by subscribing to corresponding message broker channels; the `default-channel` is joined on startup.
+
+- `replication-log-service` saves all chat messages that are ever sent by any `chat-server` instance.
+  When a `chat-server` instance joins a channel, it first retrieves the channel's past messages from the replication log.
+
+  Currently, this is a simple web server written in Rust, which holds all chat messages in memory.
+  A more robust solution would be e.g. a redis instance that persists its data to disk, or a service built on top of e.g. [etcd](https://etcd.io/).
+
+Current limitations:
+- Users cannot actually connect to an instance using websockets or so as this is just a PoC.
+  For now, there is only a web endpoint to retrieve the messages an instance has received.
+- For the same reason, there is currently no possibility to properly send messages from the `chat-server` instances.
+  Sending messages can be emulated by connecting to the `message-broker-service` and manually publishing a message (to `default-channel`), see below.
+- Similarly, there is no API yet for a `chat-server` instance to join/leave specific channels.
 
 # Running the cluster
 
